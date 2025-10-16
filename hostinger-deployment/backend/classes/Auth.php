@@ -156,11 +156,10 @@ class Auth {
      */
     public function login($email, $password, $rememberMe = false) {
         try {
-            // Get user data
+            // Get user data - simplified for missing user_profiles table
             $stmt = $this->db->prepare("
-                SELECT u.*, up.preferences, up.timezone, up.language 
+                SELECT u.*
                 FROM users u 
-                LEFT JOIN user_profiles up ON u.id = up.user_id 
                 WHERE u.email = ? AND u.status = 'active'
             ");
             
@@ -210,19 +209,8 @@ class Auth {
             $token = $this->generateJWT($payload);
             $tokenHash = hash('sha256', $token);
             
-            // Store session
-            $stmt = $this->db->prepare("
-                INSERT INTO user_sessions (user_id, token_hash, expires_at, ip_address, user_agent, created_at) 
-                VALUES (?, ?, ?, ?, ?, NOW())
-            ");
-            
-            $stmt->execute([
-                $user['id'],
-                $tokenHash,
-                date('Y-m-d H:i:s', $tokenExpiry),
-                $_SERVER['REMOTE_ADDR'] ?? null,
-                $_SERVER['HTTP_USER_AGENT'] ?? null
-            ]);
+            // Store session - simplified for missing user_sessions table
+            // For now, we'll skip session storage and rely on JWT validation
             
             // Update last login
             $stmt = $this->db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
@@ -266,44 +254,34 @@ class Auth {
                 ];
             }
             
-            // Check if session exists and is active
-            $tokenHash = hash('sha256', $token);
+            // Simplified token verification - just validate JWT and get user
+            $userId = $payload['user_id'];
             $stmt = $this->db->prepare("
-                SELECT s.*, u.*, up.preferences, up.timezone, up.language 
-                FROM user_sessions s
-                JOIN users u ON s.user_id = u.id
-                LEFT JOIN user_profiles up ON u.id = up.user_id
-                WHERE s.token_hash = ? AND s.is_active = 1 AND s.expires_at > NOW()
+                SELECT u.*
+                FROM users u 
+                WHERE u.id = ? AND u.status = 'active'
             ");
             
-            $stmt->execute([$tokenHash]);
-            $session = $stmt->fetch();
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch();
             
-            if (!$session) {
+            if (!$user) {
                 return [
                     'success' => false,
-                    'error' => 'Session not found or expired'
-                ];
-            }
-            
-            // Check if user is still active
-            if ($session['status'] !== 'active') {
-                return [
-                    'success' => false,
-                    'error' => 'User account is not active'
+                    'error' => 'User not found or inactive'
                 ];
             }
             
             // Prepare user data
             $userData = [
-                'id' => $session['user_id'],
-                'email' => $session['email'],
-                'name' => $session['name'],
-                'role' => $session['role'],
-                'avatar' => $session['avatar'],
-                'preferences' => json_decode($session['preferences'] ?? '{}', true),
-                'timezone' => $session['timezone'],
-                'language' => $session['language']
+                'id' => $user['id'],
+                'email' => $user['email'],
+                'name' => $user['name'],
+                'role' => $user['role'],
+                'avatar' => $user['avatar'],
+                'preferences' => [],
+                'timezone' => 'UTC',
+                'language' => 'en'
             ];
             
             return [
@@ -311,8 +289,8 @@ class Auth {
                 'data' => [
                     'user' => $userData,
                     'session' => [
-                        'expires_at' => $session['expires_at'],
-                        'ip_address' => $session['ip_address']
+                        'expires_at' => date('c', $payload['exp']),
+                        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null
                     ]
                 ]
             ];
