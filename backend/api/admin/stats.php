@@ -66,7 +66,7 @@ try {
     $stats['total_contacts'] = (int)$stmt->fetchColumn();
     
     // New contacts this month
-    $stmt = $db->query("SELECT COUNT(*) FROM contacts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $stmt = $db->query("SELECT COUNT(*) FROM contacts WHERE created_at >= datetime('now', '-30 days')");
     $stats['new_contacts_month'] = (int)$stmt->fetchColumn();
     
     // Newsletter subscribers
@@ -96,22 +96,22 @@ try {
     // Monthly stats for charts
     $stmt = $db->query("
         SELECT 
-            DATE_FORMAT(created_at, '%Y-%m') as month,
+            strftime('%Y-%m', created_at) as month,
             COUNT(*) as count
         FROM contacts 
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        WHERE created_at >= datetime('now', '-12 months')
+        GROUP BY strftime('%Y-%m', created_at)
         ORDER BY month ASC
     ");
     $stats['monthly_contacts'] = $stmt->fetchAll();
     
     $stmt = $db->query("
         SELECT 
-            DATE_FORMAT(created_at, '%Y-%m') as month,
+            strftime('%Y-%m', created_at) as month,
             COUNT(*) as count
         FROM users 
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        WHERE created_at >= datetime('now', '-12 months')
+        GROUP BY strftime('%Y-%m', created_at)
         ORDER BY month ASC
     ");
     $stats['monthly_users'] = $stmt->fetchAll();
