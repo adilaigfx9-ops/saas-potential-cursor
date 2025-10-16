@@ -19,6 +19,14 @@ class Auth {
     }
     
     /**
+     * Get current timestamp in database-compatible format
+     */
+    private function getCurrentTimestamp() {
+        $isSqlite = $this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
+        return $isSqlite ? "datetime('now')" : "NOW()";
+    }
+    
+    /**
      * Generate JWT token
      */
     private function generateJWT($payload) {
@@ -110,7 +118,7 @@ class Auth {
             // Insert user
             $stmt = $this->db->prepare("
                 INSERT INTO users (email, password, name, role, verification_token, created_at) 
-                VALUES (?, ?, ?, ?, ?, NOW())
+                VALUES (?, ?, ?, ?, ?, " . $this->getCurrentTimestamp() . ")
             ");
             
             $stmt->execute([$email, $hashedPassword, $name, $role, $verificationToken]);
@@ -119,7 +127,7 @@ class Auth {
             // Create user profile
             $stmt = $this->db->prepare("
                 INSERT INTO user_profiles (user_id, preferences, created_at) 
-                VALUES (?, ?, NOW())
+                VALUES (?, ?, " . $this->getCurrentTimestamp() . ")
             ");
             
             $defaultPreferences = json_encode([
@@ -213,7 +221,7 @@ class Auth {
             // For now, we'll skip session storage and rely on JWT validation
             
             // Update last login
-            $stmt = $this->db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+            $stmt = $this->db->prepare("UPDATE users SET last_login = " . $this->getCurrentTimestamp() . " WHERE id = ?");
             $stmt->execute([$user['id']]);
             
             // Log activity
@@ -308,17 +316,15 @@ class Auth {
      */
     public function logout($token) {
         try {
-            $tokenHash = hash('sha256', $token);
-            
-            // Deactivate session
-            $stmt = $this->db->prepare("UPDATE user_sessions SET is_active = 0 WHERE token_hash = ?");
-            $stmt->execute([$tokenHash]);
-            
-            // Get user ID for logging
+            // Get user ID for logging before token verification
             $payload = $this->verifyJWT($token);
             if ($payload) {
                 $this->logActivity($payload['user_id'], 'user_logout', 'users', $payload['user_id'], 'User logged out');
             }
+            
+            // Note: Since we're using JWT tokens without server-side session storage,
+            // logout is handled client-side by removing the token.
+            // In a production environment, you might want to implement a token blacklist.
             
             return [
                 'success' => true,
@@ -370,12 +376,12 @@ class Auth {
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT, ['cost' => BCRYPT_COST]);
             
             // Update password
-            $stmt = $this->db->prepare("UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?");
+            $stmt = $this->db->prepare("UPDATE users SET password = ?, updated_at = " . $this->getCurrentTimestamp() . " WHERE id = ?");
             $stmt->execute([$hashedPassword, $userId]);
             
-            // Invalidate all sessions except current one
-            $stmt = $this->db->prepare("UPDATE user_sessions SET is_active = 0 WHERE user_id = ?");
-            $stmt->execute([$userId]);
+            // Note: Since we're using JWT tokens without server-side session storage,
+            // password change doesn't invalidate other sessions.
+            // In a production environment, you might want to implement a token blacklist.
             
             // Log activity
             $this->logActivity($userId, 'password_changed', 'users', $userId, 'Password changed successfully');
@@ -418,7 +424,7 @@ class Auth {
             // Update user with reset token
             $stmt = $this->db->prepare("
                 UPDATE users 
-                SET reset_token = ?, reset_expires = ?, updated_at = NOW() 
+                SET reset_token = ?, reset_expires = ?, updated_at = " . $this->getCurrentTimestamp() . " 
                 WHERE id = ?
             ");
             
@@ -453,7 +459,7 @@ class Auth {
             // Find user with valid reset token
             $stmt = $this->db->prepare("
                 SELECT id FROM users 
-                WHERE reset_token = ? AND reset_expires > NOW() AND status = 'active'
+                WHERE reset_token = ? AND reset_expires > " . $this->getCurrentTimestamp() . " AND status = 'active'
             ");
             
             $stmt->execute([$token]);
@@ -480,15 +486,15 @@ class Auth {
             // Update password and clear reset token
             $stmt = $this->db->prepare("
                 UPDATE users 
-                SET password = ?, reset_token = NULL, reset_expires = NULL, updated_at = NOW() 
+                SET password = ?, reset_token = NULL, reset_expires = NULL, updated_at = " . $this->getCurrentTimestamp() . " 
                 WHERE id = ?
             ");
             
             $stmt->execute([$hashedPassword, $user['id']]);
             
-            // Invalidate all sessions
-            $stmt = $this->db->prepare("UPDATE user_sessions SET is_active = 0 WHERE user_id = ?");
-            $stmt->execute([$user['id']]);
+            // Note: Since we're using JWT tokens without server-side session storage,
+            // password reset doesn't invalidate other sessions.
+            // In a production environment, you might want to implement a token blacklist.
             
             // Log activity
             $this->logActivity($user['id'], 'password_reset', 'users', $user['id'], 'Password reset successfully');
@@ -510,15 +516,32 @@ class Auth {
      * Increment login attempts
      */
     private function incrementLoginAttempts($userId) {
-        $stmt = $this->db->prepare("
-            UPDATE users 
-            SET login_attempts = login_attempts + 1,
-                locked_until = CASE 
-                    WHEN login_attempts >= 4 THEN DATE_ADD(NOW(), INTERVAL 30 MINUTE)
-                    ELSE locked_until 
-                END
-            WHERE id = ?
-        ");
+        // Check if using SQLite or MySQL
+        $isSqlite = $this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
+        
+        if ($isSqlite) {
+            // SQLite syntax
+            $stmt = $this->db->prepare("
+                UPDATE users 
+                SET login_attempts = login_attempts + 1,
+                    locked_until = CASE 
+                        WHEN login_attempts >= 4 THEN datetime('now', '+30 minutes')
+                        ELSE locked_until 
+                    END
+                WHERE id = ?
+            ");
+        } else {
+            // MySQL syntax
+            $stmt = $this->db->prepare("
+                UPDATE users 
+                SET login_attempts = login_attempts + 1,
+                    locked_until = CASE 
+                        WHEN login_attempts >= 4 THEN DATE_ADD(NOW(), INTERVAL 30 MINUTE)
+                        ELSE locked_until 
+                    END
+                WHERE id = ?
+            ");
+        }
         
         $stmt->execute([$userId]);
     }
@@ -543,7 +566,7 @@ class Auth {
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO activity_logs (user_id, action, entity, entity_id, description, changes, ip_address, user_agent, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, " . $this->getCurrentTimestamp() . ")
             ");
             
             $stmt->execute([
