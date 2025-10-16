@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Route Test - Adil Creator</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            max-width: 800px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: #1f2937; margin-bottom: 10px; }
+        .subtitle { color: #6b7280; margin-bottom: 30px; }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .test-section h3 { color: #374151; margin-bottom: 15px; }
+        button { 
+            background: #dc2626; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { background: #b91c1c; }
+        button.secondary { background: #6b7280; }
+        button.secondary:hover { background: #4b5563; }
+        .result { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 6px; 
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .status { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: 500;
+        }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .status.pending { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Admin Route Test</h1>
+        <p class="subtitle">Testing admin panel accessibility and authentication</p>
+        
+        <div class="test-section">
+            <h3>1. Route Accessibility Test</h3>
+            <p>Test if the /admin route is accessible and properly configured.</p>
+            <button onclick="testAdminRoute()">Test Admin Route</button>
+            <button onclick="testAuthRoute()" class="secondary">Test Auth Route</button>
+            <div id="routeResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Authentication Test</h3>
+            <p>Test admin login with default credentials.</p>
+            <button onclick="testAdminLogin()">Test Admin Login</button>
+            <button onclick="clearAuth()" class="secondary">Clear Auth</button>
+            <div id="authResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Admin Panel Access</h3>
+            <p>Test accessing the admin panel after authentication.</p>
+            <button onclick="testAdminPanel()">Access Admin Panel</button>
+            <button onclick="checkAuthStatus()" class="secondary">Check Auth Status</button>
+            <div id="panelResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Quick Actions</h3>
+            <p>Quick access to admin panel and authentication.</p>
+            <button onclick="window.open('/admin', '_blank')">Open Admin Panel</button>
+            <button onclick="window.open('/auth', '_blank')" class="secondary">Open Auth Page</button>
+            <button onclick="window.open('/test-admin-login.html', '_blank')" class="secondary">Open Login Test</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/backend/api';
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testAdminRoute() {
+            showResult('routeResult', 'Testing admin route...', 'info');
+            
+            try {
+                const response = await fetch('/admin');
+                const text = await response.text();
+                
+                if (response.ok) {
+                    if (text.includes('Admin Dashboard') || text.includes('root')) {
+                        showResult('routeResult', `✅ Admin route is accessible!\nStatus: ${response.status}\nContent: React app loaded`, 'success');
+                    } else {
+                        showResult('routeResult', `⚠️ Admin route accessible but content unexpected\nStatus: ${response.status}\nContent preview: ${text.substring(0, 200)}...`, 'info');
+                    }
+                } else {
+                    showResult('routeResult', `❌ Admin route failed\nStatus: ${response.status}\nResponse: ${text}`, 'error');
+                }
+            } catch (error) {
+                showResult('routeResult', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAuthRoute() {
+            showResult('routeResult', 'Testing auth route...', 'info');
+            
+            try {
+                const response = await fetch('/auth');
+                const text = await response.text();
+                
+                if (response.ok) {
+                    showResult('routeResult', `✅ Auth route is accessible!\nStatus: ${response.status}`, 'success');
+                } else {
+                    showResult('routeResult', `❌ Auth route failed\nStatus: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult('routeResult', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminLogin() {
+            showResult('authResult', 'Testing admin login...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth.php/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@adilgfx.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store auth data
+                    localStorage.setItem('authToken', data.data.token);
+                    localStorage.setItem('userRole', data.data.user.role);
+                    localStorage.setItem('userName', data.data.user.name);
+                    
+                    showResult('authResult', `✅ Admin login successful!\nUser: ${data.data.user.name}\nRole: ${data.data.user.role}\nToken: ${data.data.token.substring(0, 50)}...`, 'success');
+                } else {
+                    showResult('authResult', `❌ Admin login failed\nError: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('authResult', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            showResult('authResult', '✅ Auth data cleared', 'success');
+        }
+
+        function checkAuthStatus() {
+            const token = localStorage.getItem('authToken');
+            const role = localStorage.getItem('userRole');
+            const name = localStorage.getItem('userName');
+            
+            if (token && role) {
+                showResult('panelResult', `✅ Authenticated\nUser: ${name}\nRole: ${role}\nToken: ${token.substring(0, 50)}...`, 'success');
+            } else {
+                showResult('panelResult', '❌ Not authenticated\nPlease login first', 'error');
+            }
+        }
+
+        async function testAdminPanel() {
+            const token = localStorage.getItem('authToken');
+            const role = localStorage.getItem('userRole');
+            
+            if (!token || role !== 'admin') {
+                showResult('panelResult', '❌ Not authenticated as admin\nPlease login first', 'error');
+                return;
+            }
+            
+            showResult('panelResult', 'Testing admin panel access...', 'info');
+            
+            try {
+                // Test if we can access admin-specific API endpoints
+                const response = await fetch(`${API_BASE}/admin/stats.php`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('panelResult', `✅ Admin panel API accessible!\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult('panelResult', `❌ Admin panel API failed\nStatus: ${response.status}\nError: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult('panelResult', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check auth status on load
+        window.addEventListener('load', () => {
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>
