@@ -1,0 +1,115 @@
+═══════════════════════════════════════════════════════════════
+  HOSTINGER DEPLOYMENT CHECKLIST - ADMIN PANEL FIX
+═══════════════════════════════════════════════════════════════
+
+✅ PRE-DEPLOYMENT
+─────────────────────────────────────────────────────────────
+□ Backup current database and files
+□ Verify all files are in hostinger-deployment/ folder
+□ Review .env configuration needs
+
+✅ UPLOAD FILES
+─────────────────────────────────────────────────────────────
+□ Upload all files from hostinger-deployment/ to domain root
+□ Maintain folder structure (backend/, assets/, etc.)
+□ Set file permissions (755 for directories, 644 for files)
+
+✅ DATABASE SETUP
+─────────────────────────────────────────────────────────────
+Choose ONE option:
+
+OPTION A: Run Migration (Recommended)
+□ Visit: https://your-domain.com/backend/migrate_user_profiles.php
+□ Verify success message appears
+□ Check that user_profiles table was created
+
+OPTION B: Full Install (If starting fresh)
+□ Visit: https://your-domain.com/backend/install.php
+□ Follow installation prompts
+□ Choose option 2 if tables exist and you want to reset
+
+OPTION C: Manual SQL (If you have phpMyAdmin access)
+□ Open phpMyAdmin
+□ Select your database
+□ Import: backend/database/hostinger_mysql_schema.sql
+
+✅ CONFIGURATION
+─────────────────────────────────────────────────────────────
+□ Edit backend/config/config.php with database credentials
+□ Set DB_HOST, DB_NAME, DB_USER, DB_PASS
+□ Update JWT_SECRET (generate new secure string)
+□ Configure API keys if using AI/social features
+
+✅ TESTING
+─────────────────────────────────────────────────────────────
+□ Visit: https://your-domain.com
+□ Homepage loads correctly
+□ Visit: https://your-domain.com/admin
+□ Can see admin login page
+□ Login with:
+   Email: admin@adilgfx.com (or admin@adilcreator.com)
+   Password: admin123
+□ Admin dashboard loads without errors
+□ Navigate to Users section - no database errors
+□ Test creating/editing content
+
+✅ SECURITY
+─────────────────────────────────────────────────────────────
+□ Change default admin password IMMEDIATELY
+□ Generate new JWT_SECRET in config
+□ Disable error display in production (set APP_ENV=production)
+□ Review file permissions
+□ Check .htaccess is blocking uploads directory listing
+□ Verify backend/ is not directly accessible (should redirect)
+
+✅ POST-DEPLOYMENT
+─────────────────────────────────────────────────────────────
+□ Test all API endpoints work
+□ Verify file uploads work
+□ Check contact form submission
+□ Test blog/portfolio/services CRUD operations
+□ Monitor PHP error logs for any issues
+□ Set up regular database backups
+
+✅ OPTIONAL FEATURES
+─────────────────────────────────────────────────────────────
+□ Configure SMTP for email (backend/config/config.php)
+□ Add OpenAI API key for AI features
+□ Set up cron jobs (see backend/cron/README_CRON_SETUP.md)
+□ Configure social media API keys
+□ Enable CDN for static assets
+
+═══════════════════════════════════════════════════════════════
+  QUICK FIX COMMANDS
+═══════════════════════════════════════════════════════════════
+
+Fix admin panel error:
+  https://your-domain.com/backend/migrate_user_profiles.php
+
+Reinstall database:
+  https://your-domain.com/backend/install.php?action=2
+
+Test API:
+  https://your-domain.com/backend/api/test.php
+
+═══════════════════════════════════════════════════════════════
+  HELP & DOCUMENTATION
+═══════════════════════════════════════════════════════════════
+
+□ FIX_ADMIN_PANEL.md - Admin panel error solutions
+□ QUICK_START_FIX.md - 2-minute fix guide
+□ DEPLOYMENT_GUIDE_ROCKET_SITE.md - Full deployment guide
+□ ADMIN_PANEL_FIX_SUMMARY.md - Technical details
+
+═══════════════════════════════════════════════════════════════
+  DEFAULT CREDENTIALS
+═══════════════════════════════════════════════════════════════
+
+Admin Login:
+  URL: https://your-domain.com/admin
+  Email: admin@adilgfx.com (or admin@adilcreator.com)  
+  Password: admin123
+
+⚠️ CHANGE PASSWORD AFTER FIRST LOGIN!
+
+═══════════════════════════════════════════════════════════════

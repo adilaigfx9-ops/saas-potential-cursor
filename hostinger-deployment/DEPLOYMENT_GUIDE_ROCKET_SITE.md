@@ -42,10 +42,34 @@
    ```
 
 ### **Step 3: Database Setup**
+
+**Option A: Run Installation Script (Recommended)**
+```bash
+# Via browser
+https://your-domain.com/backend/install.php
+
+# Or via SSH
+cd public_html/backend
+php install.php
+```
+
+**Option B: Manual Import (Alternative)**
 1. **Access phpMyAdmin** in Hostinger cPanel
 2. **Select database**: `u720615217_adil_db`
-3. **Import main schema**: `backend/database/hostinger_mysql_schema.sql`
-4. **Import Rocket features**: `backend/database/rocket_site_features.sql`
+3. **Import schema**: `backend/database/hostinger_mysql_schema.sql`
+
+**IMPORTANT: Fix Admin Panel (If needed)**
+If you get "no such table: user_profiles" error when logging into admin:
+```bash
+# Run migration script
+https://your-domain.com/backend/migrate_user_profiles.php
+
+# Or via SSH
+cd public_html/backend
+php migrate_user_profiles.php
+```
+
+See `FIX_ADMIN_PANEL.md` for detailed instructions.
 
 ### **Step 4: Set File Permissions**
 ```bash
