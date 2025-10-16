@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +14,18 @@ Allow: /
 
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Disallow sensitive areas
+Disallow: /backend/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?*
+
+# Sitemap location
+Sitemap: https://adilgfx.com/backend/api/sitemap.php
+
+# Allow important files
+Allow: /favicon.ico
+Allow: /robots.txt

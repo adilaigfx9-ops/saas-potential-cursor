@@ -1,0 +1,71 @@
+{
+  "name": "Adil Creator - Professional Design Platform",
+  "short_name": "Adil Creator",
+  "description": "Professional design services including logo design, YouTube thumbnails, and video editing",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "design", "creative"],
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Desktop view"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "750x1334",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Mobile view"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Portfolio",
+      "short_name": "Portfolio",
+      "description": "View design portfolio",
+      "url": "/portfolio",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Services",
+      "short_name": "Services",
+      "description": "Browse services",
+      "url": "/services",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "description": "Get in touch",
+      "url": "/contact",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
