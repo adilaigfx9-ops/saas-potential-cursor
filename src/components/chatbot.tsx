@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react"
-import { MessageCircle, Send, X, User, Bot, Star, FileText, Phone } from "lucide-react"
+import { MessageCircle, Send, X, User, Bot, Star, FileText, Phone, Sparkles, Zap, Lightbulb, TrendingUp, Clock, CheckCircle, ArrowRight, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 
 interface Message {
   id: number
