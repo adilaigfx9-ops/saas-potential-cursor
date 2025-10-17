@@ -18,10 +18,12 @@ interface PricingCalculatorProps {
 }
 
 const serviceOptions = [
-  { value: 'logo', label: 'Logo Design', basePrice: 149 },
-  { value: 'thumbnails', label: 'YouTube Thumbnails', basePrice: 49 },
-  { value: 'video', label: 'Video Editing', basePrice: 299 },
-  { value: 'branding', label: 'Complete Branding', basePrice: 399 },
+  { value: 'logo', label: 'Logo Design', basePrice: 149, description: 'Professional brand identity' },
+  { value: 'thumbnails', label: 'YouTube Thumbnails', basePrice: 49, description: 'High-converting designs' },
+  { value: 'video', label: 'Video Editing', basePrice: 299, description: 'Professional post-production' },
+  { value: 'branding', label: 'Complete Branding', basePrice: 399, description: 'Full brand identity package' },
+  { value: 'channel', label: 'YouTube Channel Setup', basePrice: 599, description: 'Complete channel optimization' },
+  { value: 'social', label: 'Social Media Package', basePrice: 249, description: 'Multi-platform content' },
 ];
 
 const complexityMultipliers = [

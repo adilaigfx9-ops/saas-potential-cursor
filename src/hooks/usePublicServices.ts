@@ -40,18 +40,18 @@ export function usePublicServices() {
       
       if (data.success) {
         // Transform database services to match the expected format
-        const transformedServices = (Array.isArray(data.data) ? data.data : []).map((service: any) => ({
+        const transformedServices = (Array.isArray(data.data.services) ? data.data.services : []).map((service: any) => ({
           id: service.id,
-          title: service.name || service.title,
-          subtitle: service.tagline || service.subtitle || 'Professional Service',
+          title: service.title || service.name,
+          subtitle: service.subtitle || service.tagline || 'Professional Service',
           description: service.description,
           icon: service.icon || '🎨',
-          packages: service.packages ? JSON.parse(service.packages) : [
+          packages: service.packages || service.pricing_tiers || [
             {
               name: `Basic ${service.name}`,
               price: `Starting at $${service.base_price || 99}`,
               timeline: service.delivery_time || '3-5 days',
-              features: service.features ? JSON.parse(service.features) : [
+              features: service.features || [
                 'Professional design',
                 'High quality output',
                 '2 revisions included'
@@ -59,7 +59,8 @@ export function usePublicServices() {
             }
           ],
           category: service.category_name,
-          slug: service.slug
+          slug: service.slug,
+          popular: service.popular
         }))
         
         setServices(transformedServices)

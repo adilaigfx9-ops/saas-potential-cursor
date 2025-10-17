@@ -107,7 +107,7 @@ export default function Services() {
 
                 {/* Packages */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {service.packages.map((pkg, pkgIndex) => (
+                  {service.packages?.map((pkg, pkgIndex) => (
                     <div 
                       key={pkgIndex}
                       className={`relative bg-card rounded-xl border p-8 transition-all duration-300 hover:shadow-premium ${
@@ -124,15 +124,15 @@ export default function Services() {
 
                       <div className="text-center mb-6">
                         <h3 className="text-xl font-semibold text-foreground mb-2">{pkg.name}</h3>
-                        <div className="text-3xl font-bold text-youtube-red mb-2">{pkg.price}</div>
+                        <div className="text-3xl font-bold text-youtube-red mb-2">${pkg.price}</div>
                         <div className="flex items-center justify-center text-muted-foreground text-sm">
                           <Clock className="h-4 w-4 mr-1" />
-                          {pkg.timeline}
+                          {pkg.duration || pkg.timeline}
                         </div>
                       </div>
 
                       <ul className="space-y-3 mb-8">
-                        {pkg.features.map((feature, featureIndex) => (
+                        {pkg.features?.map((feature, featureIndex) => (
                           <li key={featureIndex} className="flex items-start">
                             <CheckCircle className="h-5 w-5 text-youtube-red mr-3 mt-0.5 flex-shrink-0" />
                             <span className="text-sm text-muted-foreground">{feature}</span>
