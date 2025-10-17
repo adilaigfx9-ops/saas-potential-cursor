@@ -70,7 +70,10 @@ export function PricingEstimator() {
   const estimatedPrice = Math.round(basePrice * urgencyMultiplier * complexityMultiplier)
 
   const handleGetQuote = () => {
-    const message = `Hi Adil! I used your price estimator. My project (${currentService.name} - ${currentVariation.name}) estimate is $${estimatedPrice}. Can we discuss?`
+    const urgencyText = urgency[0] === 1 ? 'Standard' : urgency[0] === 2 ? 'Rush (+50%)' : 'Emergency (+100%)'
+    const complexityText = complexity[0] === 1 ? 'Simple' : complexity[0] === 2 ? 'Medium' : complexity[0] === 3 ? 'Complex' : 'Very Complex'
+    
+    const message = `🚀 **Smart Quote Request**\n\nHi Adil! I used your AI-powered price estimator:\n\n**Project:** ${currentService.name} - ${currentVariation.name}\n**Estimate:** $${estimatedPrice}\n**Urgency:** ${urgencyText}\n**Complexity:** ${complexityText}\n\nI'd love to discuss this project with you!`
     const whatsappUrl = `${externalLinks.whatsapp}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
