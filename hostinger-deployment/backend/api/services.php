@@ -103,6 +103,9 @@ try {
                 foreach ($services as &$service) {
                     $service['features'] = json_decode($service['features'] ?? '[]', true);
                     $service['pricing_tiers'] = json_decode($service['pricing_tiers'] ?? '[]', true);
+                    $service['title'] = $service['name']; // Add title field for compatibility
+                    $service['subtitle'] = $service['tagline']; // Add subtitle field for compatibility
+                    $service['packages'] = $service['pricing_tiers']; // Add packages field for compatibility
                 }
                 
                 echo json_encode([

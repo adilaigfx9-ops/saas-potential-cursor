@@ -14,7 +14,6 @@ import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Chatbot } from "@/components/chatbot";
 import { FloatingWhatsApp } from "@/components/floating-whatsapp";
-import AIChatWidget from "@/components/AIChatWidget";
 import { ReturningVisitorBanner } from "@/components/returning-visitor-banner";
 import { AnalyticsConsentModal } from "@/components/analytics-consent-modal";
 import { ExitIntentPopup } from "@/components/exit-intent-popup";
@@ -80,7 +79,6 @@ const App = () => (
               </Routes>
               <Footer />
               <Chatbot />
-              <AIChatWidget position="bottom-right" primaryColor="#dc2626" />
               <FloatingWhatsApp />
               <ExitIntentPopup />
               <AnalyticsConsentModal />
