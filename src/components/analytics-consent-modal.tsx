@@ -1,245 +1,134 @@
-/**
- * Analytics Consent Modal Component
- * GDPR-compliant analytics opt-in modal
- */
-
 import { useState, useEffect } from 'react';
-import { Shield, Cookie, Settings2, Check, X as XIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Checkbox } from './ui/checkbox';
+import { Shield, Cookie, BarChart3 } from 'lucide-react';
 import { enableAnalytics, disableAnalytics, hasAnalyticsConsent } from '@/utils/analytics';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-
-const CONSENT_SHOWN_KEY = 'analytics_consent_shown';
 
 export function AnalyticsConsentModal() {
   const [isVisible, setIsVisible] = useState(false);
-  const [showCustomize, setShowCustomize] = useState(false);
-  const [preferences, setPreferences] = useState({
-    necessary: true,
-    analytics: true,
-    marketing: false,
-  });
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [performanceEnabled, setPerformanceEnabled] = useState(false);
 
   useEffect(() => {
-    checkConsentStatus();
+    // Check if user has already made a choice
+    const hasConsent = hasAnalyticsConsent();
+    if (hasConsent !== null) {
+      return; // User has already made a choice
+    }
+
+    // Show modal after a delay
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  const checkConsentStatus = () => {
-    const hasConsent = hasAnalyticsConsent();
-    const hasBeenShown = localStorage.getItem(CONSENT_SHOWN_KEY);
-
-    if (!hasConsent && !hasBeenShown) {
-      setTimeout(() => {
-        setIsVisible(true);
-      }, 2000);
-    }
-  };
-
-  const handleAcceptAll = () => {
-    enableAnalytics();
-    localStorage.setItem(CONSENT_SHOWN_KEY, 'true');
-    setIsVisible(false);
-  };
-
-  const handleDenyAll = () => {
-    disableAnalytics();
-    localStorage.setItem(CONSENT_SHOWN_KEY, 'true');
-    setIsVisible(false);
-  };
-
-  const handleSavePreferences = () => {
-    if (preferences.analytics) {
+  const handleAccept = () => {
+    if (analyticsEnabled) {
       enableAnalytics();
     } else {
       disableAnalytics();
     }
-    localStorage.setItem('cookie_preferences', JSON.stringify(preferences));
-    localStorage.setItem(CONSENT_SHOWN_KEY, 'true');
-    setShowCustomize(false);
     setIsVisible(false);
   };
 
+  const handleAcceptAll = () => {
+    enableAnalytics();
+    setIsVisible(false);
+  };
+
+  const handleRejectAll = () => {
+    disableAnalytics();
+    setIsVisible(false);
+  };
+
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <>
-      <AnimatePresence>
-        {isVisible && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 p-4 md:bottom-6 md:left-6 md:right-auto md:max-w-lg"
-          >
-            <div className="bg-card border-2 border-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
-              <div className="bg-gradient-to-br from-youtube-red/10 via-transparent to-blue-500/5 p-6 pb-4">
-                <div className="flex items-start gap-4">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="w-12 h-12 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
-                  >
-                    <Cookie className="h-6 w-6 text-youtube-red" />
-                  </motion.div>
-
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-foreground mb-1.5">
-                      Cookie Preferences
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      We use cookies to enhance your browsing experience and analyze site traffic. Your privacy is important to us.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-6 py-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-                  <Shield className="h-3.5 w-3.5 text-green-500" />
-                  <span>Your privacy matters. No data is sold to third parties.</span>
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Button
-                      onClick={handleAcceptAll}
-                      className="w-full bg-gradient-youtube hover:shadow-glow hover:scale-[1.02] transition-all duration-300 font-semibold h-11"
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Accept All Cookies
-                    </Button>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="grid grid-cols-2 gap-2"
-                  >
-                    <Button
-                      onClick={handleDenyAll}
-                      variant="outline"
-                      className="border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 font-medium h-10 transition-all duration-200"
-                    >
-                      <XIcon className="h-3.5 w-3.5 mr-1.5" />
-                      Deny All
-                    </Button>
-                    <Button
-                      onClick={() => setShowCustomize(true)}
-                      variant="outline"
-                      className="border-border hover:bg-muted hover:border-youtube-red/50 font-medium h-10 transition-all duration-200"
-                    >
-                      <Settings2 className="h-3.5 w-3.5 mr-1.5" />
-                      Customize
-                    </Button>
-                  </motion.div>
-                </div>
-
-                <p className="text-[10px] text-center text-muted-foreground mt-3 leading-relaxed">
-                  By accepting, you agree to our use of cookies as described in our Privacy Policy.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <Dialog open={showCustomize} onOpenChange={setShowCustomize}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-youtube-red" />
-              Customize Cookie Preferences
-            </DialogTitle>
-            <DialogDescription>
-              Manage your cookie settings. Essential cookies cannot be disabled as they are required for the site to function.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <div className="flex items-center justify-between space-x-4 p-4 rounded-lg bg-muted/50">
-              <div className="flex-1">
-                <Label htmlFor="necessary" className="font-semibold text-sm">
-                  Essential Cookies
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Required for core site functionality. Always enabled.
-                </p>
-              </div>
-              <Switch
-                id="necessary"
-                checked={preferences.necessary}
-                disabled
-                className="data-[state=checked]:bg-green-500"
-              />
-            </div>
-
-            <div className="flex items-center justify-between space-x-4 p-4 rounded-lg bg-muted/50">
-              <div className="flex-1">
-                <Label htmlFor="analytics" className="font-semibold text-sm">
-                  Analytics Cookies
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Help us understand how visitors use our site.
-                </p>
-              </div>
-              <Switch
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <Shield className="h-6 w-6 text-youtube-red" />
+            <CardTitle>Privacy & Analytics</CardTitle>
+          </div>
+          <CardDescription>
+            We respect your privacy. Please choose your preferences for data collection.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <Checkbox
                 id="analytics"
-                checked={preferences.analytics}
-                onCheckedChange={(checked) =>
-                  setPreferences({ ...preferences, analytics: checked })
-                }
+                checked={analyticsEnabled}
+                onCheckedChange={(checked) => setAnalyticsEnabled(checked as boolean)}
               />
-            </div>
-
-            <div className="flex items-center justify-between space-x-4 p-4 rounded-lg bg-muted/50">
-              <div className="flex-1">
-                <Label htmlFor="marketing" className="font-semibold text-sm">
-                  Marketing Cookies
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Used to deliver personalized content and ads.
+              <div className="space-y-1">
+                <label htmlFor="analytics" className="text-sm font-medium cursor-pointer">
+                  <div className="flex items-center space-x-2">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Analytics & Performance</span>
+                  </div>
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Help us improve our website by sharing anonymous usage data and performance metrics.
                 </p>
               </div>
-              <Switch
-                id="marketing"
-                checked={preferences.marketing}
-                onCheckedChange={(checked) =>
-                  setPreferences({ ...preferences, marketing: checked })
-                }
+            </div>
+
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="performance"
+                checked={performanceEnabled}
+                onCheckedChange={(checked) => setPerformanceEnabled(checked as boolean)}
               />
+              <div className="space-y-1">
+                <label htmlFor="performance" className="text-sm font-medium cursor-pointer">
+                  <div className="flex items-center space-x-2">
+                    <Cookie className="h-4 w-4" />
+                    <span>Essential Cookies</span>
+                  </div>
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Required for basic website functionality and user preferences.
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col space-y-2">
             <Button
-              onClick={handleSavePreferences}
-              className="flex-1 bg-gradient-youtube hover:shadow-glow"
+              onClick={handleAcceptAll}
+              className="w-full bg-gradient-youtube hover:shadow-glow"
+            >
+              Accept All
+            </Button>
+            <Button
+              onClick={handleAccept}
+              variant="outline"
+              className="w-full"
             >
               Save Preferences
             </Button>
             <Button
-              onClick={() => setShowCustomize(false)}
-              variant="outline"
+              onClick={handleRejectAll}
+              variant="ghost"
+              className="w-full text-muted-foreground"
             >
-              Cancel
+              Reject All
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+
+          <p className="text-xs text-muted-foreground text-center">
+            You can change these settings anytime in your browser preferences.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
